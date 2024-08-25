@@ -1,10 +1,10 @@
-# Sevent - Smart solutions for supermarket
+# Aurora - Smart AI Solutions for Supermarkets
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 
 ## Descrição
 
-Sevent é um sistema inteligente projetado para otimizar a experiência de compras em supermercados, oferecendo soluções personalizadas e interativas para os clientes, além de melhorar a gestão interna do estabelecimento. Com a integração de tecnologias avançadas de reconhecimento de fala e processamento de linguagem natural (NLP), o Sevent proporciona uma interface de usuário intuitiva e eficiente.
+**Aurora** é uma inteligência artificial desenvolvida para ser instalada em supermercados, com o objetivo de otimizar a experiência de compras dos clientes. Oferecendo soluções personalizadas e interativas, Aurora também aprimora a gestão interna do estabelecimento. Integrando tecnologias avançadas de reconhecimento de fala e processamento de linguagem natural (NLP), Aurora proporciona uma interface de usuário eficiente e intuitiva, adaptando-se às necessidades específicas de cada ambiente de varejo.
 
 ## Índice
 
@@ -26,7 +26,7 @@ Sevent é um sistema inteligente projetado para otimizar a experiência de compr
 1. Clone o repositório:
 
     ```bash
-    git clone git@github.com:atmarvila/Aurora.git
+    git clone https://github.com/username/repo.git
     ```
 
 2. Navegue para o diretório do projeto:
