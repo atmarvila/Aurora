@@ -26,7 +26,7 @@ Sevent é um sistema inteligente projetado para otimizar a experiência de compr
 1. Clone o repositório:
 
     ```bash
-    git clone https://github.com/username/repo.git
+    git clone git@github.com:atmarvila/Aurora.git
     ```
 
 2. Navegue para o diretório do projeto:
