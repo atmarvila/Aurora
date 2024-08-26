@@ -1,0 +1,4 @@
+speechbrain
+SpeechRecognition
+fuzzywuzzy
+spacy
