@@ -2,3 +2,4 @@ speechbrain
 SpeechRecognition
 fuzzywuzzy
 spacy
+python-Levenshtein
