@@ -4,3 +4,4 @@ fuzzywuzzy
 spacy
 python-Levenshtein
 firebase_admin
+pyaudio

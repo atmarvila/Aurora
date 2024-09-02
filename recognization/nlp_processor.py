@@ -19,24 +19,10 @@ def nlp_processor(recognized_text, map):
 
     # Faz o matching do texto reconhecido com o dicionário de comandos
     cleaned_text = " ".join(tokens)  # Recompõe o texto tokenizado para fazer o matching
-    matched_command = process.extractOne(cleaned_text, map.keys(), scorer=fuzz.partial_ratio)  # Use 'map' aqui
+    matched_command = process.extractOne(cleaned_text, map.keys(), scorer=fuzz.partial_ratio)
     
     # Verifica se o match foi suficientemente preciso
     if matched_command and matched_command[1] > 80:  # 80% de similaridade
-        return map[matched_command[0]]  # Use 'map' aqui
+        return map[matched_command[0]]
     else:
         return None
-
-
-if __name__ == "__main__":
-    test_commands = [
-        "cadastro de colaborador",
-        "Cadastro de Colaboradores",
-        "verificar voz registrada",
-        "checagem de voz",
-        "Registrar colaborador Rafael Marvila"
-    ]
-
-    for command in test_commands:
-        result = nlp_processor(command, client_map)  # ou employee_map, dependendo do que você deseja testar
-        print(f"Comando reconhecido: '{command}' -> Função correspondente: '{result}'")
