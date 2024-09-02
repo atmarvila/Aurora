@@ -3,3 +3,4 @@ SpeechRecognition
 fuzzywuzzy
 spacy
 python-Levenshtein
+firebase_admin
