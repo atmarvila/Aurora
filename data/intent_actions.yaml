@@ -1,0 +1,36 @@
+actions:
+  employee_check_in:
+    function: register_timekeeping
+    triggers:
+      voice_recognition: true
+      phrases:
+        - "bom dia"
+        - "boa tarde"
+        - "oi aurora"
+    conditions:
+      supermarket_location: true
+
+  client_verification:
+    function: recognize_registered_voice
+    triggers:
+      phrases:
+        - "verificar voz"
+        - "verificar cadastro"
+    conditions:
+      customer_account_exists: true
+
+  client_registration:
+    function: register_client
+    triggers:
+      phrases:
+        - "cadastro cliente"
+        - "registrar cliente"
+        - "novo cadastro"
+
+  daily_promotion:
+    function: deal_of_day
+    triggers:
+      phrases:
+        - "qual a promoção do dia"
+        - "promoção de hoje"
+        - "ofertas"
