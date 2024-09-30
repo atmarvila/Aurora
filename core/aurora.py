@@ -1,19 +1,27 @@
 import sys
 import os
+import yaml  # Importa a biblioteca PyYAML para ler o arquivo YAML
 import speech_recognition as srcd  # Importa speech_recognition
 from firebase_admin import storage  # Importa o módulo de storage do Firebase
-from responses import get_greeting_response  # Importa a função de resposta
 
 # Adiciona o diretório raiz ao sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from nlp_processor import nlp_processor  # Importa o processador NLP
-from command_map import employee_map  # Importa o mapa de comandos
+from core.responses import get_greeting_response  # Ajuste a importação com caminho absoluto
 
 class AuroraAI:
     def __init__(self):
         # Inicializa o reconhecedor de fala
         self.recognizer = srcd.Recognizer()
+
+        # Carrega o arquivo YAML
+        self.intent_actions = self.load_intent_actions()
+
+    def load_intent_actions(self):
+        """Carrega o arquivo intent_actions.yaml e retorna os dados"""
+        yaml_path = os.path.join(os.path.dirname(__file__), '../data/intent_actions.yaml')
+        with open(yaml_path, 'r', encoding='utf-8') as file:
+            return yaml.safe_load(file)
 
     def normalize_text(self, text):
         text = text.lower()
@@ -29,35 +37,27 @@ class AuroraAI:
         response = get_greeting_response()
         print(f"Aurora: {response}")
 
-    # Função para reconhecer voz registrada
-    def recognize_registered_voice(self, registered_audio_path, new_audio_path):
-        # Código para reconhecer voz registrada
-        pass
-
     # Função para executar comandos baseados no texto reconhecido
     def execute_command(self, recognized_text, audio=None):
         # Normaliza o texto reconhecido
         normalized_text = self.normalize_text(recognized_text)
 
-        # Checa se é uma saudação
-        if "oi aurora" in normalized_text:
-            self.handle_greeting()
-            return
-
-        # Usa o processador NLP para encontrar o comando apropriado
-        command_function_name = nlp_processor(normalized_text, employee_map)
-        if command_function_name:
-            # Obtém a função correspondente ao comando encontrado
-            command_function = getattr(self, command_function_name, None)
-            if command_function:
-                if command_function_name == "register_collaborator":
-                    command_function(audio, recognized_text)  # Passa os argumentos necessários
-                else:
-                    command_function()  # Executa a função sem argumentos adicionais
-            else:
-                print("Aurora: Desculpe, não consigo executar esse comando.")
-        else:
-            print("Aurora: Comando não reconhecido. Tente novamente.")
+        # Checa as ações no intent_actions.yaml
+        for action, details in self.intent_actions['actions'].items():
+            phrases = details['triggers']['phrases']
+            if any(phrase in normalized_text for phrase in phrases):
+                function_name = details['function']
+                
+                # Chama a função correspondente
+                command_function = getattr(self, function_name, None)
+                if command_function:
+                    print(f"Aurora: Executando a função '{function_name}' para a ação '{action}'")
+                    if function_name == "register_collaborator":
+                        command_function(audio, recognized_text)  # Passa os argumentos necessários
+                    else:
+                        command_function()  # Executa a função sem argumentos adicionais
+                    return
+        print("Aurora: Comando não reconhecido. Tente novamente.")
 
     def recognize_speech(self):
         while True:
@@ -95,6 +95,19 @@ class AuroraAI:
             print(f"Upload do arquivo {local_file} para {bucket_path} concluído com sucesso.")
         except Exception as e:
             print(f"Erro ao fazer upload para o Firebase: {e}")
+
+    # Exemplo de funções que devem existir para cada ação no intent_actions.yaml
+    def register_timekeeping(self):
+        print("Aurora: Registro de ponto realizado.")
+
+    def recognize_registered_voice(self):
+        print("Aurora: Verificando voz registrada.")
+
+    def register_client(self):
+        print("Aurora: Registrando novo cliente.")
+
+    def deal_of_day(self):
+        print("Aurora: A promoção do dia é...")
 
 if __name__ == "__main__":
     aurora = AuroraAI()
