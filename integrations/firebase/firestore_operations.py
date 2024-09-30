@@ -35,7 +35,7 @@ class FirestoreOperations:
 
 # Exemplo de uso:
 if __name__ == "__main__":
-    firebase_conn = FirebaseConnection('/path/to/credentials.json', 'sevent-7197f.appspot.com')
+    firebase_conn = FirebaseConnection("C:\Users\salut\OneDrive\Documentos\Sevent\Connecion firebase\firebase-connection.json", 'sevent-7197f.appspot.com')
     firestore_ops = FirestoreOperations(firebase_conn)
 
     # Dados fictícios para teste
