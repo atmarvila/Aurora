@@ -1,66 +1,43 @@
 import sys
 import os
-import yaml
-import speech_recognition as srcd
-from firebase_admin import storage
+import yaml  # Importa a biblioteca PyYAML para ler o arquivo YAML
+import speech_recognition as srcd  # Importa speech_recognition
+from firebase_admin import storage  # Importa o módulo de storage do Firebase
 
 # Adiciona o diretório raiz ao sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Importa os módulos de ações das pastas apropriadas
-from core.actions.promotion.deal_of_day import deal_of_day
-from core.actions.register.register_client import register_client
-from core.actions.register.register_employee import CollaboratorRegistration
-from core.actions.register.register_timekeeping import register_timekeeping
-from core.actions.validation.recognize_registered_voice import recognize_registered_voice
-
-# Importa o processador NLP e as respostas
-from core.nlp.nlp_processor import nlp_processor
-from core.responses.responses import get_greeting_response
-
+from core.responses import get_greeting_response  # Ajuste a importação com caminho absoluto
 
 class AuroraAI:
     def __init__(self):
         # Inicializa o reconhecedor de fala
         self.recognizer = srcd.Recognizer()
 
-        # Carrega o arquivo intent_actions.yaml e responses.yaml
-        self.intent_actions = self.load_yaml_file('../data/intent_actions.yaml')
-        self.responses = self.load_yaml_file('../data/responses.yaml')
+        # Carrega o arquivo YAML
+        self.intent_actions = self.load_intent_actions()
 
-        # Instancia a classe CollaboratorRegistration passando a instância de AuroraAI
-        self.collaborator_registration = CollaboratorRegistration(self)
-
-        # Dicionário de ações mapeando funções para ações correspondentes
-        self.action_map = {
-            'register_timekeeping': register_timekeeping,
-            'recognize_registered_voice': recognize_registered_voice,
-            'register_client': register_client,
-            'deal_of_day': deal_of_day,
-            'register_collaborator': self.collaborator_registration.register_collaborator
-        }
-
-    def load_yaml_file(self, relative_path):
-        """Carrega um arquivo YAML e retorna os dados"""
-        yaml_path = os.path.join(os.path.dirname(__file__), relative_path)
+    def load_intent_actions(self):
+        """Carrega o arquivo intent_actions.yaml e retorna os dados"""
+        yaml_path = os.path.join(os.path.dirname(__file__), '../data/intent_actions.yaml')
         with open(yaml_path, 'r', encoding='utf-8') as file:
             return yaml.safe_load(file)
 
-    def get_response(self, category, action=None):
-        """Obtém uma resposta da categoria especificada"""
-        if action and action in self.responses['actions']:
-            return self.responses['actions'][action]
-        if category in self.responses:
-            return self.responses[category][0]
-        return self.responses['default_response']
-
     def normalize_text(self, text):
         text = text.lower()
+        # Normaliza pluralizações comuns
         text = text.replace("colaboradores", "colaborador")
         text = text.replace("clientes", "cliente")
         text = text.replace("promoções", "promoção")
+        # Adicione mais regras de normalização conforme necessário
         return text
 
+    def handle_greeting(self):
+        # Função para lidar com saudações como "Oi Aurora"
+        response = get_greeting_response()
+        print(f"Aurora: {response}")
+
+    # Função para executar comandos baseados no texto reconhecido
     def execute_command(self, recognized_text, audio=None):
         # Normaliza o texto reconhecido
         normalized_text = self.normalize_text(recognized_text)
@@ -71,37 +48,35 @@ class AuroraAI:
             if any(phrase in normalized_text for phrase in phrases):
                 function_name = details['function']
                 
-                # Verifica se a função existe no mapa de ações
-                if function_name in self.action_map:
+                # Chama a função correspondente
+                command_function = getattr(self, function_name, None)
+                if command_function:
                     print(f"Aurora: Executando a função '{function_name}' para a ação '{action}'")
-                    self.action_map[function_name]()  # Executa a função importada
+                    if function_name == "register_collaborator":
+                        command_function(audio, recognized_text)  # Passa os argumentos necessários
+                    else:
+                        command_function()  # Executa a função sem argumentos adicionais
                     return
-        print(f"Aurora: {self.get_response('default_response')}")
+        print("Aurora: Comando não reconhecido. Tente novamente.")
 
     def recognize_speech(self):
         while True:
-            try:
-                recognized_text, audio = self.listen_and_save(prompt="Você: ")
-                if recognized_text:
-                    if "aurora, por do sol" in recognized_text:
-                        print(self.get_response('farewells'))
-                        break
+            recognized_text, audio = self.listen_and_save(prompt="Você: ")  # Obtém o texto reconhecido e o áudio
+            if recognized_text:
+                # Se o usuário disser "tchau", a sessão será encerrada
+                if "tchau" in recognized_text or "encerrar" in recognized_text:
+                    print("Aurora: Até logo!")
+                    break
 
-                    self.execute_command(recognized_text, audio)
-
-            except srcd.WaitTimeoutError:
-                print("Aurora: Continuo ouvindo, tente falar novamente.")
-                continue
-            except Exception as e:
-                print(f"Aurora: Houve um erro inesperado: {e}")
-                continue
+                self.execute_command(recognized_text, audio)  # Passa o texto e o áudio para execute_command
 
     def listen_and_save(self, prompt="Diga algo:", lang="pt-BR"):
         with srcd.Microphone() as source:
             self.recognizer.adjust_for_ambient_noise(source)
             print(prompt)
+            audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)  # Ajustes de tempo
+
             try:
-                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
                 recognized_text = self.recognizer.recognize_google(audio, language=lang).lower()
                 print(f"Texto reconhecido: {recognized_text}")
                 return recognized_text, audio
@@ -111,6 +86,28 @@ class AuroraAI:
             except srcd.RequestError as e:
                 print(f"Aurora: Erro no serviço de reconhecimento de voz: {e}")
                 return None, None
+
+    def upload_to_firebase(self, local_file, bucket_path):
+        bucket = storage.bucket()
+        blob = bucket.blob(bucket_path)
+        try:
+            blob.upload_from_filename(local_file)
+            print(f"Upload do arquivo {local_file} para {bucket_path} concluído com sucesso.")
+        except Exception as e:
+            print(f"Erro ao fazer upload para o Firebase: {e}")
+
+    # Exemplo de funções que devem existir para cada ação no intent_actions.yaml
+    def register_timekeeping(self):
+        print("Aurora: Registro de ponto realizado.")
+
+    def recognize_registered_voice(self):
+        print("Aurora: Verificando voz registrada.")
+
+    def register_client(self):
+        print("Aurora: Registrando novo cliente.")
+
+    def deal_of_day(self):
+        print("Aurora: A promoção do dia é...")
 
 if __name__ == "__main__":
     aurora = AuroraAI()
