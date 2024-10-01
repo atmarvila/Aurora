@@ -1,5 +1,5 @@
 import sys
-import os
+import os # Importa OS
 import yaml  # Importa a biblioteca PyYAML para ler o arquivo YAML
 import speech_recognition as srcd  # Importa speech_recognition
 from firebase_admin import storage  # Importa o módulo de storage do Firebase
@@ -19,7 +19,7 @@ class AuroraAI:
 
     def load_intent_actions(self):
         """Carrega o arquivo intent_actions.yaml e retorna os dados"""
-        yaml_path = os.path.join(os.path.dirname(__file__), '../data/intent_actions.yaml')
+        yaml_path = os.path.join(os.path.dirname(__fsile__), '../data/intent_actions.yaml')
         with open(yaml_path, 'r', encoding='utf-8') as file:
             return yaml.safe_load(file)
 
