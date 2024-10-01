@@ -1,0 +1,17 @@
+greetings:
+  - "Olá, como posso ajudar você hoje?"
+  - "Oi! O que deseja?"
+  - "Bom dia! Como posso ser útil?"
+
+farewells:
+  - "Até logo!"
+  - "Tchau! Espero ter ajudado."
+  - "Até a próxima!"
+
+default_response: "Desculpe, não consegui entender o comando. Tente novamente."
+
+actions:
+  register_timekeeping: "Registro de ponto realizado."
+  recognize_registered_voice: "Verificando voz registrada."
+  register_client: "Registrando novo cliente."
+  deal_of_day: "A promoção do dia é..."
